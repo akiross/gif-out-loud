@@ -86,11 +86,9 @@ impl Script {
         let mut color_map = vec![0xff; 3 * 256];
         for (i, col) in color_map.chunks_mut(3).enumerate() {
             col[0] = u8::try_from(fg_r * i / 255 + bg_r * (255 - i) / 255).unwrap();
-            col[1] = u8::try_from(fg_g * i / 255 + bg_r * (255 - i) / 255).unwrap();
-            col[2] = u8::try_from(fg_b * i / 255 + bg_r * (255 - i) / 255).unwrap();
+            col[1] = u8::try_from(fg_g * i / 255 + bg_g * (255 - i) / 255).unwrap();
+            col[2] = u8::try_from(fg_b * i / 255 + bg_b * (255 - i) / 255).unwrap();
         }
-        
-        println!("Colormap is: {:?}", color_map);
 
         let mut image = File::create(path).unwrap();
         let mut encoder = Encoder::new(&mut image, self.max_w as u16, self.max_h as u16, color_map.as_slice()).unwrap();
@@ -121,14 +119,16 @@ fn main() {
     // In this example code we'll draw onto a bitmap a string with a given font face.
     // We expect the string and the face as arguments of this program:
     let text = std::env::args().nth(1).expect("Pls provide text to render");
-    // Second is the foreground color
-    let fg_color = std::env::args().nth(2).unwrap_or(String::from("0xffffff"));
+    // Expected output file
+    let out_name = std::env::args().nth(2).expect("Pls provide out file");
+    // Foreground is optional
+    let fg_color = std::env::args().nth(3).unwrap_or(String::from("0xffffff"));
     let fg_color = parse_color(fg_color.as_str()).expect("Cannot parse fg color");
-    // Third is background color
-    let bg_color = std::env::args().nth(3).unwrap_or(String::from("0xffffff"));
+    // Then is background color
+    let bg_color = std::env::args().nth(4).unwrap_or(String::from("0x000000"));
     let bg_color = parse_color(bg_color.as_str()).expect("Cannot parse bg color");
-    // Third is the face, but fall back to an open-source default font.
-    let face = std::env::args().nth(4).unwrap_or(String::from("LiberationSans-Bold.ttf"));
+    // Next is the face, but fall back to an open-source default font.
+    let face = std::env::args().nth(5).unwrap_or(String::from("LiberationSans-Bold.ttf"));
 
     println!("Text to print: {}", text);
     println!("Font to use: {}", face);
@@ -151,5 +151,5 @@ fn main() {
     
     let s = Script::from(&text, &face);
 
-    s.render_gif("prova.gif", fg_color, bg_color);
+    s.render_gif(out_name.as_str(), fg_color, bg_color);
 }
